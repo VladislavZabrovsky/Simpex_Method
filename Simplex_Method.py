@@ -134,21 +134,22 @@ def simplex_method(obj_coefficients, constraint_coefficients, rhs_values):
 
     iterations = 0
 
-    while np.min(df.loc["Z"]) < 0:
-        pivot_column = df.iloc[:, np.argmin(df.loc["Z"])]
-        ratio = df['b'].drop('Z') / df[pivot_column.name].drop('Z')
+    while np.min(df.loc["Z"][1:]) < 0:
+        valid_columns = df.columns[1:]  # we don't include b column
+        pivot_column = df.loc["Z", valid_columns].idxmin()
+        ratio = df['b'].drop('Z') / df[pivot_column].drop('Z')
         ratio = ratio[ratio > 0]
         pivot_row = ratio.idxmin()
 
-        main_element = df.at[pivot_row, pivot_column.name]
+        main_element = df.at[pivot_row, pivot_column]
         df.loc[pivot_row] /= main_element
-        df = perform_gaussian_elimination(df, pivot_row, pivot_column.name)
-        df = df.rename(index={pivot_row: pivot_column.name})
+        df = perform_gaussian_elimination(df, pivot_row, pivot_column)
+        df = df.rename(index={pivot_row: pivot_column})
 
         iterations += 1
         print(f"Iteration: {iterations}")
         print_simplex_table(df)
-        print(f"Pivot_column: {pivot_column.name} ")
+        print(f"Pivot_column: {pivot_column} ")
         print(f"Pivot_row: {pivot_row} ")
         print(f"Main_element: {main_element}")
         print(" " * 20)
